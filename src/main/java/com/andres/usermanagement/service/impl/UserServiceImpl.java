@@ -7,6 +7,7 @@ import com.andres.usermanagement.exception.ResourceNotFoundException;
 import com.andres.usermanagement.repository.UserRepository;
 import com.andres.usermanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponse createUser(UserRequest request) {
@@ -29,7 +31,7 @@ public class UserServiceImpl implements UserService {
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .createdAt(LocalDateTime.now())
                 .build();
