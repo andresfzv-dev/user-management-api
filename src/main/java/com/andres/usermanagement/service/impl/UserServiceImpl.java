@@ -1,6 +1,7 @@
 package com.andres.usermanagement.service.impl;
 
 import com.andres.usermanagement.entity.User;
+import com.andres.usermanagement.exception.ResourceNotFoundException;
 import com.andres.usermanagement.repository.UserRepository;
 import com.andres.usermanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     @Override
