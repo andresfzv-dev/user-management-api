@@ -4,6 +4,7 @@ import com.andres.usermanagement.dto.LoginRequest;
 import com.andres.usermanagement.dto.LoginResponse;
 import com.andres.usermanagement.entity.User;
 import com.andres.usermanagement.repository.UserRepository;
+import com.andres.usermanagement.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -42,12 +44,12 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        LoginResponse response = new LoginResponse(
-                user.getId(),
-                user.getName(),
+        String token = jwtService.generateToken(
                 user.getEmail(),
                 user.getRole().name()
         );
+
+        LoginResponse response = new LoginResponse(token);
 
         return ResponseEntity.ok(response);
     }
