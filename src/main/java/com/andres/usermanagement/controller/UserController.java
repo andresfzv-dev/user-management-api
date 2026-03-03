@@ -5,6 +5,7 @@ import com.andres.usermanagement.dto.UserResponse;
 import com.andres.usermanagement.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,7 +22,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -49,8 +50,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public UserResponse getMyProfile(Authentication authentication) {
+    public ResponseEntity<UserResponse> getMyProfile(Authentication authentication) {
         String email = authentication.getName();
-        return userService.getUserByEmail(email);
+        return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 }
