@@ -3,10 +3,10 @@ package com.andres.usermanagement.service.impl;
 import com.andres.usermanagement.dto.UserRequest;
 import com.andres.usermanagement.dto.UserResponse;
 import com.andres.usermanagement.entity.User;
+import com.andres.usermanagement.exception.EmailAlreadyExistsException;
 import com.andres.usermanagement.exception.ResourceNotFoundException;
 import com.andres.usermanagement.repository.UserRepository;
 import com.andres.usermanagement.service.UserService;
-import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(UserRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = User.builder()
@@ -37,9 +37,7 @@ public class UserServiceImpl implements UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        User saved = userRepository.save(user);
-
-        return mapToResponse(saved);
+        return mapToResponse(userRepository.save(user));
     }
 
     @Override
@@ -66,12 +64,14 @@ public class UserServiceImpl implements UserService {
 
         existing.setName(request.getName());
         existing.setEmail(request.getEmail());
-        existing.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
         existing.setRole(request.getRole());
 
-        User updated = userRepository.save(existing);
-
-        return mapToResponse(updated);
+        return mapToResponse(userRepository.save(existing));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         return mapToResponse(user);
     }
